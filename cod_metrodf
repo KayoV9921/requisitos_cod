@@ -1,0 +1,165 @@
+#include <stdio.h>
+#include <string.h>
+
+#define TOTAL_TRONCO 16
+#define TOTAL_VERDE 20
+#define TOTAL_LARANJA 20
+
+const char *tronco[TOTAL_TRONCO] = {
+    "Central", "Galeria", "108 Sul", "112 Sul", "114 Sul", "Asa Sul",
+    "Terminal Asa Sul", "Shopping", "Feira", "Guara", "Arniqueiras",
+    "Aguas Claras", "Concessionarias", "Estrada Parque",
+    "Praca do Relogio", "Centro Metropolitano"
+};
+
+const char *linhaVerde[TOTAL_VERDE] = {
+    "Central", "Galeria", "108 Sul", "112 Sul", "114 Sul", "Asa Sul",
+    "Terminal Asa Sul", "Shopping", "Feira", "Guara", "Arniqueiras",
+    "Aguas Claras", "Concessionarias", "Estrada Parque",
+    "Praca do Relogio", "Centro Metropolitano", "Taguatinga Sul",
+    "Furnas", "Samambaia Sul", "Samambaia"
+};
+
+const char *linhaLaranja[TOTAL_LARANJA] = {
+    "Central", "Galeria", "108 Sul", "112 Sul", "114 Sul", "Asa Sul",
+    "Terminal Asa Sul", "Shopping", "Feira", "Guara", "Arniqueiras",
+    "Aguas Claras", "Concessionarias", "Estrada Parque",
+    "Praca do Relogio", "Centro Metropolitano", "Ceilandia Sul",
+    "Guariroba", "Ceilandia Centro", "Ceilandia Norte"
+};
+
+int procurarEstacao(const char *lista[], int tamanho, const char *nome) {
+    int i;
+    for (i = 0; i < tamanho; i++) {
+        if (strcmp(lista[i], nome) == 0) return i;
+    }
+    return -1;
+}
+
+void consultarLinhas(void) {
+    printf("\nLINHAS DO METRO-DF\n");
+    printf("Linha Verde: Central ate Samambaia (20 estacoes cadastradas).\n");
+    printf("Linha Laranja: Central ate Ceilandia (20 estacoes cadastradas).\n");
+}
+
+void consultarEstacoes(void) {
+    int i;
+    printf("\nESTACOES - LINHA VERDE\n");
+    for (i = 0; i < TOTAL_VERDE; i++) printf("%2d. %s\n", i + 1, linhaVerde[i]);
+
+    printf("\nESTACOES - LINHA LARANJA\n");
+    for (i = 0; i < TOTAL_LARANJA; i++) printf("%2d. %s\n", i + 1, linhaLaranja[i]);
+}
+
+void consultarHorarios(void) {
+    printf("\nHORARIOS DE FUNCIONAMENTO (dados de exemplo)\n");
+    printf("Segunda a sexta: 05:30 as 23:30\n");
+    printf("Sabados:         07:00 as 19:00\n");
+    printf("Domingos/feriados: 07:00 as 19:00\n");
+}
+
+void mostrarTrecho(const char *lista[], int inicio, int fim) {
+    int i;
+    if (inicio <= fim) {
+        for (i = inicio; i <= fim; i++) {
+            printf("%s", lista[i]);
+            if (i < fim) printf(" -> ");
+        }
+    } else {
+        for (i = inicio; i >= fim; i--) {
+            printf("%s", lista[i]);
+            if (i > fim) printf(" -> ");
+        }
+    }
+}
+
+void planejarViagem(void) {
+    char origem[80], destino[80];
+    int ov, dv, ol, dl;
+    int centro = TOTAL_TRONCO - 1;
+    int quantidade;
+
+    printf("\nPLANEJAR VIAGEM\n");
+    printf("Digite a estacao de origem (sem acentos): ");
+    scanf(" %79[^\n]", origem);
+    printf("Digite a estacao de destino (sem acentos): ");
+    scanf(" %79[^\n]", destino);
+
+    ov = procurarEstacao(linhaVerde, TOTAL_VERDE, origem);
+    dv = procurarEstacao(linhaVerde, TOTAL_VERDE, destino);
+    ol = procurarEstacao(linhaLaranja, TOTAL_LARANJA, origem);
+    dl = procurarEstacao(linhaLaranja, TOTAL_LARANJA, destino);
+
+    if ((ov == -1 && ol == -1) || (dv == -1 && dl == -1)) {
+        printf("\nEstacao nao encontrada. Confira a escrita e tente novamente.\n");
+        return;
+    }
+    if (strcmp(origem, destino) == 0) {
+        printf("\nA origem e o destino sao iguais. Escolha estacoes diferentes.\n");
+        return;
+    }
+
+    printf("\nTRAJETO SUGERIDO\n");
+    if (ov != -1 && dv != -1) {
+        printf("Linha Verde: ");
+        mostrarTrecho(linhaVerde, ov, dv);
+        quantidade = ov > dv ? ov - dv : dv - ov;
+    } else if (ol != -1 && dl != -1) {
+        printf("Linha Laranja: ");
+        mostrarTrecho(linhaLaranja, ol, dl);
+        quantidade = ol > dl ? ol - dl : dl - ol;
+    } else if (ov >= centro && dl >= centro) {
+        printf("Linha Verde: ");
+        mostrarTrecho(linhaVerde, ov, centro);
+        printf("\nBaldeacao em Centro Metropolitano\nLinha Laranja: ");
+        mostrarTrecho(linhaLaranja, centro, dl);
+        quantidade = (ov - centro) + (dl - centro);
+    } else if (ol >= centro && dv >= centro) {
+        printf("Linha Laranja: ");
+        mostrarTrecho(linhaLaranja, ol, centro);
+        printf("\nBaldeacao em Centro Metropolitano\nLinha Verde: ");
+        mostrarTrecho(linhaVerde, centro, dv);
+        quantidade = (ol - centro) + (dv - centro);
+    } else {
+        /* As estacoes do trecho comum podem ser atendidas pelas duas linhas. */
+        printf("As estacoes informadas pertencem ao trecho compartilhado.\n");
+        printf("Consulte as linhas para escolher o sentido adequado.\n");
+        return;
+    }
+
+    printf("\n\nEstacoes percorridas: %d\n", quantidade);
+    printf("Tempo estimado: cerca de %d minutos (3 minutos por estacao, estimativa).\n", quantidade * 3);
+}
+
+int main(void) {
+    int opcao;
+
+    do {
+        printf("\n====================================\n");
+        printf("          METRO-DF\n");
+        printf("   Sistema de informacoes\n");
+        printf("====================================\n");
+        printf("1 - Consultar linhas\n");
+        printf("2 - Consultar estacoes\n");
+        printf("3 - Consultar horarios\n");
+        printf("4 - Planejar viagem\n");
+        printf("0 - Sair\n");
+        printf("Escolha uma opcao: ");
+
+        if (scanf("%d", &opcao) != 1) {
+            printf("Entrada invalida. Encerrando o programa.\n");
+            return 1;
+        }
+
+        switch (opcao) {
+            case 1: consultarLinhas(); break;
+            case 2: consultarEstacoes(); break;
+            case 3: consultarHorarios(); break;
+            case 4: planejarViagem(); break;
+            case 0: printf("\nPrograma encerrado. Ate mais!\n"); break;
+            default: printf("\nOpcao invalida. Tente novamente.\n");
+        }
+    } while (opcao != 0);
+
+    return 0;
+}
